@@ -12,6 +12,11 @@
 #define REFRACTORY_TIME 0.2
 #define POD_TIME 10
 #define EXPLOSION_TIME 60
+#define POD_SCORE 100
+#define COLLISION_SCORE 500
+#define LEVEL_SCORE 1000
+#define EXPLOSION_PENALTY 34
+#define POD_ENERGY 15
 
 
 @implementation MyScene
@@ -22,6 +27,9 @@ CGPoint thrustLocation;
 BOOL thrustIsEngaged;
 NSMutableArray *podsToAdd;
 CFTimeInterval respawnCounter;
+uint score;
+int energy;
+BOOL isDead;
 
 -(id)initWithSize:(CGSize)size {    
     if (self = [super initWithSize:size]) {
@@ -38,11 +46,11 @@ CFTimeInterval respawnCounter;
         ship.physicsBody.affectedByGravity = NO;
         ship.physicsBody.categoryBitMask = 1;
         ship.physicsBody.contactTestBitMask = 4;
-        ship.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
+
         
         // Add both nodes to playfield
         [self addChild:balls];
-        [self addChild:ship];
+
         
         
         // Set up boundaries on screen
@@ -58,7 +66,7 @@ CFTimeInterval respawnCounter;
         srand (time(NULL));
         
         // Lay out levels
-        [self layoutBallPit];
+        [self newGame];
         
         // Allocate array for pods to be added after collisions
         podsToAdd = [[NSMutableArray alloc] init];
@@ -76,6 +84,45 @@ CFTimeInterval respawnCounter;
         
         [balls addChild:ball];
     }
+}
+
+-(void) killBallPit
+{
+    // Nuke all extant balls.
+    for (Ball *b in balls.children) {
+        b.explosionTimer = [[NSDate date] timeIntervalSinceReferenceDate] - EXPLOSION_TIME + 1.0;
+        b.isFullBall = YES;
+    }
+    
+    // And kill any pods in the pipeline, too.
+    podsToAdd = [[NSMutableArray alloc] init];
+}
+
+-(void) shipAppears
+{
+    ship.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
+    [self addChild:ship];
+}
+
+-(void) shipExplodes
+{
+    isDead = YES;
+    SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
+    explosion.position = ship.position;
+    explosion.numParticlesToEmit = 80;
+    [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:4], [SKAction removeFromParent]]]];
+    [self addChild:explosion];
+    [ship removeFromParent];
+    [self killBallPit];
+}
+
+-(void) newGame
+{
+    [self layoutBallPit];
+    [self shipAppears];
+    score = 0;
+    energy = 100;
+    isDead = NO;
 }
 
 // Generate an impulse on ship towards a point
@@ -153,14 +200,34 @@ CFTimeInterval respawnCounter;
 
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
+    
+    self.scoreLabel.text = [NSString stringWithFormat:@"%08d",score];
+    self.energyLabel.text = [NSString stringWithFormat:@"%d",energy];
+    
+    // Die if we're out of energy and not already dead
+    if (energy <= 0) {
+        if (!isDead) {
+            [self shipExplodes];
+            respawnCounter = currentTime + 1;
+            return;
+        }
+    }
+    
     // If there's no balls left, wait a while and spawn some new ones
     if ([balls.children count] == 0){
         if (respawnCounter == 0) {
             respawnCounter = currentTime;
         }else{
-        if (currentTime - respawnCounter > 3) {
-            [self layoutBallPit];
-        }
+            if (currentTime - respawnCounter > 3) {
+                if (isDead) {
+                    // New game if dead
+                    [self newGame];
+                }else{
+                    // Otherwise new level
+                    [self layoutBallPit];
+                    score += LEVEL_SCORE;
+                }
+            }
         }
         return;
     }
@@ -168,13 +235,11 @@ CFTimeInterval respawnCounter;
     // If there's just one ball left, blow it up.
     if ([balls.children count] == 1){
         Ball *b = [balls.children objectAtIndex:0];
-        if (b.isFullBall == YES){
-            SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
-            explosion.position = b.position;
-            explosion.numParticlesToEmit = 80;
-            [b removeFromParent];
-            [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
-            [self addChild:explosion];
+        if (b.isFullBall == YES && respawnCounter  == 0){
+            // Start respawn counter ticking
+            respawnCounter = currentTime;
+            // Give last ball one second to blow
+            b.explosionTimer = [[NSDate date] timeIntervalSinceReferenceDate] - EXPLOSION_TIME + 1.0;
             return;
         }
     }
@@ -197,6 +262,8 @@ CFTimeInterval respawnCounter;
                 [b removeFromParent];
                 [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
                 [self addChild:explosion];
+                energy -= EXPLOSION_PENALTY;
+                energy = energy < 0 ? 0 : energy;
             }
         }
     }
@@ -216,8 +283,10 @@ CFTimeInterval respawnCounter;
         
         if (a.ballColour == b.ballColour){
             // If they're the same colour, remove from field
-            [a removeFromParent];
-            [b removeFromParent];
+            SKAction *removeSequence = [SKAction sequence:@[[SKAction scaleTo:0 duration:0.2], [SKAction removeFromParent] ]];
+            [a runAction:removeSequence];
+            [b runAction:removeSequence];
+            score += COLLISION_SCORE;
         }else{
             // Otherwise spawn a pod
             // Add refractory period to stop too many pods being created
@@ -253,6 +322,9 @@ CFTimeInterval respawnCounter;
         // If it's not a ball-on-ball, it must be pod-on-ship. Remove pod.
         if (bodyAIsBall) [contact.bodyA.node removeFromParent];
         if (bodyBIsBall) [contact.bodyB.node removeFromParent];
+        score += POD_SCORE;
+        energy += POD_ENERGY;
+        energy = energy > 100 ? 100 : energy;
     }
 }
 

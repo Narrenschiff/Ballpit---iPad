@@ -11,4 +11,7 @@
 
 @interface ViewController : UIViewController
 
+@property IBOutlet UILabel *scoreLabel;
+@property IBOutlet UILabel *energyLabel;
+
 @end

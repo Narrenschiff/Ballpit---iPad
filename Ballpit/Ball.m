@@ -81,7 +81,8 @@
 // Turn a pod into a ball
 -(void) podToBall
 {
-    self.size = CGSizeMake(100.0, 100.0);
+    [self runAction:[SKAction resizeToWidth:100.0 height:100.0 duration:0.3]];
+    //self.size = CGSizeMake(100.0, 100.0);
     self.isFullBall = YES;
     CGVector v = self.physicsBody.velocity;
     // Add a new physics body

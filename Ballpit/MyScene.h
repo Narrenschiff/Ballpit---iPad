@@ -10,4 +10,7 @@
 
 @interface MyScene : SKScene <SKPhysicsContactDelegate>
 
+@property UILabel *scoreLabel;
+@property UILabel *energyLabel;
+
 @end
