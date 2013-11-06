@@ -33,7 +33,7 @@ NSMutableArray *podsToAdd;
         ship.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:45.0];
         ship.physicsBody.affectedByGravity = NO;
         ship.physicsBody.categoryBitMask = 1;
-        ship.physicsBody.contactTestBitMask = 0;
+        ship.physicsBody.contactTestBitMask = 4;
         
         [self addChild:balls];
         [self addChild:ship];
@@ -47,10 +47,10 @@ NSMutableArray *podsToAdd;
         
         self.scene.physicsWorld.contactDelegate = self;
         
-        
-        for (uint i = 0; i<6; i++){
+        for (uint i = 0; i<10; i++){
             Ball *ball = [[Ball alloc] initWithBallColour:rand() % 3];
             ball.position = CGPointMake((float)rand()/(float)(RAND_MAX / self.frame.size.width), (float)rand()/(float)(RAND_MAX / self.frame.size.height));
+
             [balls addChild:ball];
         }
         
@@ -145,6 +145,11 @@ NSMutableArray *podsToAdd;
 #pragma mark collision delegate
 
 - (void)didBeginContact:(SKPhysicsContact *)contact {
+    
+    BOOL bodyAIsBall = [contact.bodyA.node isKindOfClass:[Ball class]];
+    BOOL bodyBIsBall = [contact.bodyB.node isKindOfClass:[Ball class]];
+    
+    if (bodyAIsBall && bodyBIsBall){
     Ball *a = (Ball *)contact.bodyA.node;
     Ball *b = (Ball *)contact.bodyB.node;
     
@@ -173,6 +178,10 @@ NSMutableArray *podsToAdd;
         }
         pod.position = contact.contactPoint;
         [podsToAdd addObject:pod];
+    }
+    }else{
+        if (bodyAIsBall) [contact.bodyA.node removeFromParent];
+        if (bodyBIsBall) [contact.bodyB.node removeFromParent];
     }
 }
 

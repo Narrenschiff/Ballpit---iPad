@@ -36,6 +36,8 @@
     
     self.physicsBody.categoryBitMask = 2;
     self.physicsBody.contactTestBitMask = 2;
+
+    [self pulseBall];
     
     
     return self;
@@ -86,7 +88,22 @@
     self.physicsBody.contactTestBitMask = 2;
     
     self.physicsBody.velocity = v;
+
+    [self pulseBall];
     
+}
+
+-(void) pulseBall
+{
+    CFTimeInterval timeAlive = [[NSDate date] timeIntervalSinceReferenceDate] - self.explosionTimer;
+    CFTimeInterval pulseDuration = 0.4 * (60 - timeAlive)/60 + 0.05;
+//    NSLog(@"Time: %f Pulse Duration %f",timeAlive,pulseDuration);
+    //Tidy this up so code is called less often at higher blink rates
+    SKAction *pulseBall = [SKAction repeatAction:[SKAction sequence:@[[SKAction scaleTo:1.1 duration:pulseDuration],
+                                                                          [SKAction scaleTo:0.9 duration:pulseDuration]]]
+                                                                     count:2];
+    SKAction *completePulse = [SKAction sequence:@[pulseBall, [SKAction performSelector:@selector(pulseBall) onTarget:self]]];
+    [self runAction:completePulse];
 }
 
 @end
