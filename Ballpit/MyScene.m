@@ -26,9 +26,11 @@ SKNode *balls;
 CGPoint thrustLocation;
 BOOL thrustIsEngaged;
 NSMutableArray *podsToAdd;
+NSMutableArray *chingsToAdd;
 CFTimeInterval respawnCounter;
 uint score;
 int energy;
+uint ching;
 BOOL isDead;
 
 -(id)initWithSize:(CGSize)size {    
@@ -48,10 +50,8 @@ BOOL isDead;
         ship.physicsBody.contactTestBitMask = 4;
 
         
-        // Add both nodes to playfield
+        // Add balls to playfield
         [self addChild:balls];
-
-        
         
         // Set up boundaries on screen
         SKNode *edge = [[SKNode alloc] init];
@@ -65,7 +65,7 @@ BOOL isDead;
         // Set random number seed
         srand (time(NULL));
         
-        // Lay out levels
+        // Lay out levels and add ship
         [self newGame];
         
         // Allocate array for pods to be added after collisions
@@ -106,6 +106,7 @@ BOOL isDead;
 
 -(void) shipExplodes
 {
+    [self gameOverLabel];
     isDead = YES;
     SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
     explosion.position = ship.position;
@@ -123,6 +124,69 @@ BOOL isDead;
     score = 0;
     energy = 100;
     isDead = NO;
+    ching = 0;
+    chingsToAdd = [[NSMutableArray alloc] init];
+}
+
+-(void) gameOverLabel
+{
+    SKLabelNode *gameOver = [SKLabelNode labelNodeWithFontNamed:@"HelveticaNeue-LightItalic"];
+    gameOver.text = @"Game Over, loser.";
+    gameOver.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
+    gameOver.color = [UIColor whiteColor];
+    gameOver.fontSize = 70;
+    [self addChild:gameOver];
+    [gameOver runAction:[SKAction sequence:@[[SKAction waitForDuration:2],
+                                             [SKAction fadeAlphaTo:0 duration:1],
+                                             [SKAction removeFromParent]]]];
+}
+
+-(void) levelUpLabel
+{
+    SKLabelNode *levelUp = [SKLabelNode labelNodeWithFontNamed:@"HelveticaNeue-Light"];
+    levelUp.text = @"Level Up!";
+    levelUp.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
+    levelUp.color = [UIColor whiteColor];
+    levelUp.fontSize = 70;
+    [self addChild:levelUp];
+    [levelUp runAction:[SKAction group:@[[SKAction scaleTo:10 duration:2],
+                                         [SKAction sequence:@[[SKAction fadeAlphaTo:0 duration:2],
+                                             [SKAction removeFromParent]]]]]];
+}
+
+-(void) chingLabelAtPosition:(CGPoint) p
+{
+    if (ching<2) return;
+    NSString *chingText;
+    switch (ching) {
+        case 2:
+            chingText = @"Nice! x2";
+            score += COLLISION_SCORE;
+            break;
+        case 3:
+            chingText = @"Great! x4";
+            score += COLLISION_SCORE * 3;
+            break;
+        case 4:
+            chingText = @"BLAZIN'! x6";
+            score += COLLISION_SCORE * 5;
+            break;
+        default:
+            chingText = @"HAIL SATAN x10";
+            score += COLLISION_SCORE * 9;
+            break;
+    }
+    
+    SKLabelNode *chingLabel = [SKLabelNode labelNodeWithFontNamed:@"HelveticaNeue-CondensedBlack"];
+    chingLabel.text = chingText;
+    chingLabel.position = p;
+    chingLabel.fontColor = ching >= 4 ? [UIColor redColor] : [UIColor yellowColor];
+    chingLabel.fontSize = 30;
+    [chingsToAdd addObject:chingLabel];
+    [chingLabel runAction:[SKAction group:@[[SKAction scaleTo:4 duration:2],
+                                         [SKAction sequence:@[[SKAction fadeAlphaTo:0 duration:2],
+                                                              [SKAction removeFromParent]]]]]];
+    
 }
 
 // Generate an impulse on ship towards a point
@@ -192,6 +256,15 @@ BOOL isDead;
         podsToAdd = [[NSMutableArray alloc] init];
     }
 
+    // Add chings
+    if ([chingsToAdd count] > 0) {
+        for (SKNode *n in chingsToAdd) {
+            [self addChild:n];
+        }
+        chingsToAdd = [[NSMutableArray alloc] init];
+    }
+    
+    
     //Don't let the sprites rotate even though they have angular momentum
     for (SKNode *n in balls.children) {
         n.zRotation = 0;
@@ -208,7 +281,7 @@ BOOL isDead;
     if (energy <= 0) {
         if (!isDead) {
             [self shipExplodes];
-            respawnCounter = currentTime + 1;
+            respawnCounter = currentTime + 3;
             return;
         }
     }
@@ -226,6 +299,7 @@ BOOL isDead;
                     // Otherwise new level
                     [self layoutBallPit];
                     score += LEVEL_SCORE;
+                    [self levelUpLabel];
                 }
             }
         }
@@ -264,6 +338,9 @@ BOOL isDead;
                 [self addChild:explosion];
                 energy -= EXPLOSION_PENALTY;
                 energy = energy < 0 ? 0 : energy;
+
+                // Lose combo
+                ching = 0;
             }
         }
     }
@@ -287,6 +364,8 @@ BOOL isDead;
             [a runAction:removeSequence];
             [b runAction:removeSequence];
             score += COLLISION_SCORE;
+            ching++;
+            [self chingLabelAtPosition:contact.contactPoint];
         }else{
             // Otherwise spawn a pod
             // Add refractory period to stop too many pods being created
@@ -317,6 +396,9 @@ BOOL isDead;
             
             // Add to an array to be added later, as adding sprites during the physics update is buggy
             [podsToAdd addObject:pod];
+            
+            // Lose combo
+            ching = 0;
         }
     }else{
         // If it's not a ball-on-ball, it must be pod-on-ship. Remove pod.
@@ -325,6 +407,9 @@ BOOL isDead;
         score += POD_SCORE;
         energy += POD_ENERGY;
         energy = energy > 100 ? 100 : energy;
+        
+        // Lose combo
+        ching = 0;
     }
 }
 
