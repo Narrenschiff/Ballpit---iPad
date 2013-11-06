@@ -29,6 +29,8 @@
 		3C3A9D72182929A50068773C /* Red.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D6E182929A50068773C /* Red.png */; };
 		3C3A9D73182929A50068773C /* Ship.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D6F182929A50068773C /* Ship.png */; };
 		3C3A9D76182957840068773C /* Ball.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C3A9D75182957840068773C /* Ball.m */; };
+		3C3A9D7D182A684A0068773C /* Explode.sks in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D7B182A684A0068773C /* Explode.sks */; };
+		3C3A9D7E182A684A0068773C /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D7C182A684A0068773C /* spark.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +73,8 @@
 		3C3A9D6F182929A50068773C /* Ship.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Ship.png; sourceTree = "<group>"; };
 		3C3A9D74182957840068773C /* Ball.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ball.h; sourceTree = "<group>"; };
 		3C3A9D75182957840068773C /* Ball.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Ball.m; sourceTree = "<group>"; };
+		3C3A9D7B182A684A0068773C /* Explode.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Explode.sks; sourceTree = "<group>"; };
+		3C3A9D7C182A684A0068773C /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +150,8 @@
 				3C3A9D6D182929A50068773C /* Green.png */,
 				3C3A9D6E182929A50068773C /* Red.png */,
 				3C3A9D6F182929A50068773C /* Ship.png */,
+				3C3A9D7B182A684A0068773C /* Explode.sks */,
+				3C3A9D7C182A684A0068773C /* spark.png */,
 				3C3A9D4F182921680068773C /* Images.xcassets */,
 				3C3A9D36182921680068773C /* Supporting Files */,
 			);
@@ -257,10 +263,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C3A9D7E182A684A0068773C /* spark.png in Resources */,
 				3C3A9D50182921680068773C /* Images.xcassets in Resources */,
 				3C3A9D71182929A50068773C /* Green.png in Resources */,
 				3C3A9D46182921680068773C /* Main_iPad.storyboard in Resources */,
 				3C3A9D70182929A50068773C /* Blue.png in Resources */,
+				3C3A9D7D182A684A0068773C /* Explode.sks in Resources */,
 				3C3A9D43182921680068773C /* Main_iPhone.storyboard in Resources */,
 				3C3A9D3A182921680068773C /* InfoPlist.strings in Resources */,
 				3C3A9D72182929A50068773C /* Red.png in Resources */,
@@ -508,6 +516,7 @@
 				3C3A9D68182921680068773C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3C3A9D69182921680068773C /* Build configuration list for PBXNativeTarget "BallpitTests" */ = {
 			isa = XCConfigurationList;
@@ -516,6 +525,7 @@
 				3C3A9D6B182921680068773C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

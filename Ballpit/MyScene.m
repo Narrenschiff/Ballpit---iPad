@@ -21,6 +21,7 @@ SKNode *balls;
 CGPoint thrustLocation;
 BOOL thrustIsEngaged;
 NSMutableArray *podsToAdd;
+CFTimeInterval respawnCounter;
 
 -(id)initWithSize:(CGSize)size {    
     if (self = [super initWithSize:size]) {
@@ -47,16 +48,24 @@ NSMutableArray *podsToAdd;
         
         self.scene.physicsWorld.contactDelegate = self;
         
-        for (uint i = 0; i<10; i++){
-            Ball *ball = [[Ball alloc] initWithBallColour:rand() % 3];
-            ball.position = CGPointMake((float)rand()/(float)(RAND_MAX / self.frame.size.width), (float)rand()/(float)(RAND_MAX / self.frame.size.height));
-
-            [balls addChild:ball];
-        }
+        srand (time(NULL));
+        
+        [self layoutBallPit];
         
         podsToAdd = [[NSMutableArray alloc] init];
     }
     return self;
+}
+
+-(void) layoutBallPit
+{
+    respawnCounter = 0;
+    for (uint i = 0; i<10; i++){
+        Ball *ball = [[Ball alloc] initWithBallColour:rand() % 3];
+        ball.position = CGPointMake((float)rand()/(float)(RAND_MAX / self.frame.size.width), (float)rand()/(float)(RAND_MAX / self.frame.size.height));
+        
+        [balls addChild:ball];
+    }
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -125,6 +134,29 @@ NSMutableArray *podsToAdd;
 
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
+    if ([balls.children count] == 0){
+        if (respawnCounter == 0) {
+            respawnCounter = currentTime;
+        }else{
+        if (currentTime - respawnCounter > 3) {
+            [self layoutBallPit];
+        }
+        }
+        return;
+    }
+    if ([balls.children count] == 1){
+        Ball *b = [balls.children objectAtIndex:0];
+        if (b.isFullBall == YES){
+            SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
+            explosion.position = b.position;
+            explosion.numParticlesToEmit = 80;
+            [b removeFromParent];
+            [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
+            [self addChild:explosion];
+            return;
+        }
+    }
+    
     CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
     for (Ball *b in balls.children) {
         // Check if pod needs to become a ball
@@ -136,7 +168,12 @@ NSMutableArray *podsToAdd;
         }else{
             // Check if ball explodes
             if (currentTimeSinceReferenceDate - b.explosionTimer > EXPLOSION_TIME){
+                SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
+                explosion.position = b.position;
+                explosion.numParticlesToEmit = 20;
                 [b removeFromParent];
+                [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
+                [self addChild:explosion];
             }
         }
     }
