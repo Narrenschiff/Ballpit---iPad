@@ -29,34 +29,44 @@ CFTimeInterval respawnCounter;
         
         self.backgroundColor = [SKColor colorWithRed:0.15 green:0.15 blue:0.3 alpha:1.0];
         
+        // Node to which all balls are added
         balls = [[SKNode alloc] init];
+        
+        // Create ship node
         ship = [SKSpriteNode spriteNodeWithImageNamed:@"Ship"];
         ship.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:45.0];
         ship.physicsBody.affectedByGravity = NO;
         ship.physicsBody.categoryBitMask = 1;
         ship.physicsBody.contactTestBitMask = 4;
+        ship.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
         
+        // Add both nodes to playfield
         [self addChild:balls];
         [self addChild:ship];
         
-        ship.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
         
+        // Set up boundaries on screen
         SKNode *edge = [[SKNode alloc] init];
         edge.physicsBody = [SKPhysicsBody bodyWithEdgeLoopFromRect:self.frame];
         [self addChild:edge];
         edge.physicsBody.categoryBitMask = 8;
         
+        // Set up contact delegate for processing collisions
         self.scene.physicsWorld.contactDelegate = self;
         
+        // Set random number seed
         srand (time(NULL));
         
+        // Lay out levels
         [self layoutBallPit];
         
+        // Allocate array for pods to be added after collisions
         podsToAdd = [[NSMutableArray alloc] init];
     }
     return self;
 }
 
+// Create a ball pit with some balls in to play with
 -(void) layoutBallPit
 {
     respawnCounter = 0;
@@ -68,6 +78,20 @@ CFTimeInterval respawnCounter;
     }
 }
 
+// Generate an impulse on ship towards a point
+-(void)shipThrustToPoint
+{
+    CGFloat xThrust = (thrustLocation.x - ship.position.x) / THRUSTSCALE;
+    CGFloat yThrust = (thrustLocation.y - ship.position.y) / THRUSTSCALE;
+    CGVector thrustVector = CGVectorMake(xThrust, yThrust);
+    [ship.physicsBody applyForce:thrustVector];
+    ship.zRotation = atan2f(-xThrust, yThrust);
+}
+
+
+#pragma mark touch controls
+
+// Detect touches in play, set a location for ship to fly towards and then set thrustIsEngaged flag
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     
@@ -75,7 +99,6 @@ CFTimeInterval respawnCounter;
     
     for (UITouch *touch in touches) {
         CGPoint location = [touch locationInNode:self];
-        
         if (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved){
             thrustLocation = location;
             thrustIsEngaged = YES;
@@ -103,22 +126,18 @@ CFTimeInterval respawnCounter;
     }
 }
 
--(void)shipThrustToPoint
-{
-    CGFloat xThrust = (thrustLocation.x - ship.position.x) / THRUSTSCALE;
-    CGFloat yThrust = (thrustLocation.y - ship.position.y) / THRUSTSCALE;
-    CGVector thrustVector = CGVectorMake(xThrust, yThrust);
-    [ship.physicsBody applyForce:thrustVector];
-    ship.zRotation = atan2f(-xThrust, yThrust);
-}
+#pragma mark Points in scene rendering
 
 -(void)didEvaluateActions
 {
+    // Thrust towards ship if touch is in effect
     if (thrustIsEngaged) [self shipThrustToPoint];
 }
 
 -(void)didSimulatePhysics
 {
+    // Add pods to playfield
+    // (adding sprites while physics is being evaluated is buggy)
     if ([podsToAdd count] > 0) {
         for (Ball *b in podsToAdd) {
             [balls addChild:b];
@@ -134,6 +153,7 @@ CFTimeInterval respawnCounter;
 
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
+    // If there's no balls left, wait a while and spawn some new ones
     if ([balls.children count] == 0){
         if (respawnCounter == 0) {
             respawnCounter = currentTime;
@@ -144,6 +164,8 @@ CFTimeInterval respawnCounter;
         }
         return;
     }
+    
+    // If there's just one ball left, blow it up.
     if ([balls.children count] == 1){
         Ball *b = [balls.children objectAtIndex:0];
         if (b.isFullBall == YES){
@@ -157,6 +179,7 @@ CFTimeInterval respawnCounter;
         }
     }
     
+    // Check to see if balls need to be altered according to their age
     CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
     for (Ball *b in balls.children) {
         // Check if pod needs to become a ball
@@ -186,37 +209,48 @@ CFTimeInterval respawnCounter;
     BOOL bodyAIsBall = [contact.bodyA.node isKindOfClass:[Ball class]];
     BOOL bodyBIsBall = [contact.bodyB.node isKindOfClass:[Ball class]];
     
+    // Check to see if it's a ball-on-ball collision
     if (bodyAIsBall && bodyBIsBall){
-    Ball *a = (Ball *)contact.bodyA.node;
-    Ball *b = (Ball *)contact.bodyB.node;
-    
-    if (a.ballColour == b.ballColour){
-        [a removeFromParent];
-        [b removeFromParent];
-    }else{
-        CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
-        if ((currentTimeSinceReferenceDate - a.refractoryTimer < REFRACTORY_TIME) ||
-            (currentTimeSinceReferenceDate - b.refractoryTimer < REFRACTORY_TIME)) return;
-        b.refractoryTimer = currentTimeSinceReferenceDate;
-        a.refractoryTimer = currentTimeSinceReferenceDate;
-        Ball *pod;
-        switch (a.ballColour + b.ballColour) {
-            case 1:
-                pod = [[Ball alloc] initPodWithColour:2];
-                break;
-            case 2:
-                pod = [[Ball alloc] initPodWithColour:1];
-                break;
-            case 3:
-                pod = [[Ball alloc] initPodWithColour:0];
-                break;
-            default:
-                break;
+        Ball *a = (Ball *)contact.bodyA.node;
+        Ball *b = (Ball *)contact.bodyB.node;
+        
+        if (a.ballColour == b.ballColour){
+            // If they're the same colour, remove from field
+            [a removeFromParent];
+            [b removeFromParent];
+        }else{
+            // Otherwise spawn a pod
+            // Add refractory period to stop too many pods being created
+            CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
+            if ((currentTimeSinceReferenceDate - a.refractoryTimer < REFRACTORY_TIME) ||
+                (currentTimeSinceReferenceDate - b.refractoryTimer < REFRACTORY_TIME)) return;
+            b.refractoryTimer = currentTimeSinceReferenceDate;
+            a.refractoryTimer = currentTimeSinceReferenceDate;
+            
+            // Generate pod of different colour to parents
+            Ball *pod;
+            switch (a.ballColour + b.ballColour) {
+                case 1:
+                    pod = [[Ball alloc] initPodWithColour:2];
+                    break;
+                case 2:
+                    pod = [[Ball alloc] initPodWithColour:1];
+                    break;
+                case 3:
+                    pod = [[Ball alloc] initPodWithColour:0];
+                    break;
+                default:
+                    break;
+            }
+            
+            // Pod will appear at contact point
+            pod.position = contact.contactPoint;
+            
+            // Add to an array to be added later, as adding sprites during the physics update is buggy
+            [podsToAdd addObject:pod];
         }
-        pod.position = contact.contactPoint;
-        [podsToAdd addObject:pod];
-    }
     }else{
+        // If it's not a ball-on-ball, it must be pod-on-ship. Remove pod.
         if (bodyAIsBall) [contact.bodyA.node removeFromParent];
         if (bodyBIsBall) [contact.bodyB.node removeFromParent];
     }
