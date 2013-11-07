@@ -9,7 +9,6 @@
 #import "MyScene.h"
 #import "Ball.h"
 #define THRUSTSCALE 3.0
-#define REFRACTORY_TIME 0.2
 #define POD_SCORE 100
 #define COLLISION_SCORE 500
 #define LEVEL_SCORE 1000
@@ -31,7 +30,7 @@ int energy;
 uint ching;
 BOOL isDead;
 
--(id)initWithSize:(CGSize)size {    
+-(id)initWithSize:(CGSize)size {
     if (self = [super initWithSize:size]) {
         /* Setup your scene here */
         
@@ -46,7 +45,7 @@ BOOL isDead;
         ship.physicsBody.affectedByGravity = NO;
         ship.physicsBody.categoryBitMask = 1;
         ship.physicsBody.contactTestBitMask = 4;
-
+        
         
         // Add balls to playfield
         [self addChild:balls];
@@ -88,8 +87,8 @@ BOOL isDead;
 {
     // Nuke all extant balls.
     for (Ball *b in balls.children) {
-        [b killSelfAfterSecond];
         b.isFullBall = YES;
+        [b killSelfAfterSecond];
     }
     
     // And kill any pods in the pipeline, too.
@@ -149,7 +148,7 @@ BOOL isDead;
     [self addChild:levelUp];
     [levelUp runAction:[SKAction group:@[[SKAction scaleTo:10 duration:2],
                                          [SKAction sequence:@[[SKAction fadeAlphaTo:0 duration:2],
-                                             [SKAction removeFromParent]]]]]];
+                                                              [SKAction removeFromParent]]]]]];
 }
 
 -(void) chingLabelAtPosition:(CGPoint) p
@@ -182,8 +181,8 @@ BOOL isDead;
     chingLabel.fontSize = 30;
     [chingsToAdd addObject:chingLabel];
     [chingLabel runAction:[SKAction group:@[[SKAction scaleTo:4 duration:2],
-                                         [SKAction sequence:@[[SKAction fadeAlphaTo:0 duration:2],
-                                                              [SKAction removeFromParent]]]]]];
+                                            [SKAction sequence:@[[SKAction fadeAlphaTo:0 duration:2],
+                                                                 [SKAction removeFromParent]]]]]];
     
 }
 
@@ -253,7 +252,7 @@ BOOL isDead;
         }
         podsToAdd = [[NSMutableArray alloc] init];
     }
-
+    
     // Add chings
     if ([chingsToAdd count] > 0) {
         for (SKNode *n in chingsToAdd) {
@@ -284,6 +283,18 @@ BOOL isDead;
         }
     }
     
+    // If there's just one ball left, blow it up.
+    if ([balls.children count] == 1){
+        Ball *b = [balls.children objectAtIndex:0];
+        if (b.isFullBall == YES && respawnCounter  == 0){
+            // Start respawn counter ticking
+            respawnCounter = currentTime;
+            // Give last ball one second to blow
+            [b killSelfAfterSecond];
+            return;
+        }
+    }
+    
     // If there's no balls left, wait a while and spawn some new ones
     if ([balls.children count] == 0){
         if (respawnCounter == 0) {
@@ -304,17 +315,7 @@ BOOL isDead;
         return;
     }
     
-    // If there's just one ball left, blow it up.
-    if ([balls.children count] == 1){
-        Ball *b = [balls.children objectAtIndex:0];
-        if (b.isFullBall == YES && respawnCounter  == 0){
-            // Start respawn counter ticking
-            respawnCounter = currentTime;
-            // Give last ball one second to blow
-            [b killSelfAfterSecond];
-            return;
-        }
-    }
+
     
 }
 
@@ -338,9 +339,11 @@ BOOL isDead;
     
     // Check to see if it's a ball-on-ball collision
     if (bodyAIsBall && bodyBIsBall){
+        // If it is a ball on ball, get details of balls.
         Ball *a = (Ball *)contact.bodyA.node;
         Ball *b = (Ball *)contact.bodyB.node;
         
+        // Check colours
         if (a.ballColour == b.ballColour){
             // If they're the same colour, remove from field
             SKAction *removeSequence = [SKAction sequence:@[[SKAction scaleTo:0 duration:0.2], [SKAction removeFromParent] ]];
@@ -350,38 +353,37 @@ BOOL isDead;
             ching++;
             [self chingLabelAtPosition:contact.contactPoint];
         }else{
-            // Otherwise spawn a pod
-            // Add refractory period to stop too many pods being created
-            CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
-            if ((currentTimeSinceReferenceDate - a.refractoryTimer < REFRACTORY_TIME) ||
-                (currentTimeSinceReferenceDate - b.refractoryTimer < REFRACTORY_TIME)) return;
-            b.refractoryTimer = currentTimeSinceReferenceDate;
-            a.refractoryTimer = currentTimeSinceReferenceDate;
-            
-            // Generate pod of different colour to parents
-            Ball *pod;
-            switch (a.ballColour + b.ballColour) {
-                case 1:
-                    pod = [[Ball alloc] initPodWithColour:2];
-                    break;
-                case 2:
-                    pod = [[Ball alloc] initPodWithColour:1];
-                    break;
-                case 3:
-                    pod = [[Ball alloc] initPodWithColour:0];
-                    break;
-                default:
-                    break;
+            // Otherwise spawn a pod, unless either ball is refractory
+            // Refractory period stops too many pods being created from casual contacts
+            if (!a.isRefractory && !b.isRefractory){
+                [a becomeRefractory];
+                [b becomeRefractory];
+                
+                // Generate pod of different colour to parents
+                Ball *pod;
+                switch (a.ballColour + b.ballColour) {
+                    case 1:
+                        pod = [[Ball alloc] initPodWithColour:2];
+                        break;
+                    case 2:
+                        pod = [[Ball alloc] initPodWithColour:1];
+                        break;
+                    case 3:
+                        pod = [[Ball alloc] initPodWithColour:0];
+                        break;
+                    default:
+                        break;
+                }
+                
+                // Pod will appear at contact point
+                pod.position = contact.contactPoint;
+                
+                // Add to an array to be added later, as adding sprites during the physics update is buggy
+                [podsToAdd addObject:pod];
+                
+                // Lose combo
+                ching = 0;
             }
-            
-            // Pod will appear at contact point
-            pod.position = contact.contactPoint;
-            
-            // Add to an array to be added later, as adding sprites during the physics update is buggy
-            [podsToAdd addObject:pod];
-            
-            // Lose combo
-            ching = 0;
         }
     }else{
         // If it's not a ball-on-ball, it must be pod-on-ship. Remove pod.

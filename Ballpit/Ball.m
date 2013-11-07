@@ -10,6 +10,7 @@
 #import "MyScene.h"
 #define POD_TIME 10
 #define EXPLOSION_TIME 60
+#define REFRACTORY_TIME 0.3
 
 
 @implementation Ball
@@ -173,4 +174,14 @@
                                [SKAction performSelector:@selector(explodeSelf) onTarget:self]]]];
 }
 
+-(void) becomeRefractory
+{
+    self.isRefractory = YES;
+    [self runAction:[SKAction sequence:@[[SKAction waitForDuration:REFRACTORY_TIME],
+                                         [SKAction performSelector:@selector(becomeUnrefractory) onTarget:self]]]];
+}
+-(void) becomeUnrefractory;
+{
+    self.isRefractory = NO;
+}
 @end

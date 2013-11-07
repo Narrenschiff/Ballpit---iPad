@@ -13,10 +13,13 @@
 @property CFTimeInterval refractoryTimer;
 @property uint ballColour;
 @property CFTimeInterval explosionCountdown;
+@property BOOL isRefractory;
 
 -(id) initWithBallColour: (uint) c;
 -(id) initPodWithColour: (uint) c;
 -(void) podToBall;
 -(void) killSelfAfterSecond;
+-(void) becomeRefractory;
+-(void) becomeUnrefractory;
 
 @end
