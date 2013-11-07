@@ -10,8 +10,6 @@
 #import "Ball.h"
 #define THRUSTSCALE 3.0
 #define REFRACTORY_TIME 0.2
-#define POD_TIME 10
-#define EXPLOSION_TIME 60
 #define POD_SCORE 100
 #define COLLISION_SCORE 500
 #define LEVEL_SCORE 1000
@@ -90,7 +88,7 @@ BOOL isDead;
 {
     // Nuke all extant balls.
     for (Ball *b in balls.children) {
-        b.explosionTimer = [[NSDate date] timeIntervalSinceReferenceDate] - EXPLOSION_TIME + 1.0;
+        [b killSelfAfterSecond];
         b.isFullBall = YES;
     }
     
@@ -131,7 +129,7 @@ BOOL isDead;
 -(void) gameOverLabel
 {
     SKLabelNode *gameOver = [SKLabelNode labelNodeWithFontNamed:@"HelveticaNeue-LightItalic"];
-    gameOver.text = @"Game Over, loser.";
+    gameOver.text = @"Game Over";
     gameOver.position = CGPointMake(CGRectGetMidX(self.frame),CGRectGetMidY(self.frame));
     gameOver.color = [UIColor whiteColor];
     gameOver.fontSize = 70;
@@ -313,38 +311,23 @@ BOOL isDead;
             // Start respawn counter ticking
             respawnCounter = currentTime;
             // Give last ball one second to blow
-            b.explosionTimer = [[NSDate date] timeIntervalSinceReferenceDate] - EXPLOSION_TIME + 1.0;
+            [b killSelfAfterSecond];
             return;
         }
     }
     
-    // Check to see if balls need to be altered according to their age
-    CFTimeInterval currentTimeSinceReferenceDate = [[NSDate date] timeIntervalSinceReferenceDate];
-    for (Ball *b in balls.children) {
-        // Check if pod needs to become a ball
-        if (b.isFullBall == NO) {
-            // Check if pod needs to become a ball
-            if (currentTimeSinceReferenceDate - b.explosionTimer > POD_TIME){
-                [b podToBall];
-            }
-        }else{
-            // Check if ball explodes
-            if (currentTimeSinceReferenceDate - b.explosionTimer > EXPLOSION_TIME){
-                SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
-                explosion.position = b.position;
-                explosion.numParticlesToEmit = 20;
-                [b removeFromParent];
-                [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
-                [self addChild:explosion];
-                energy -= EXPLOSION_PENALTY;
-                energy = energy < 0 ? 0 : energy;
-
-                // Lose combo
-                ching = 0;
-            }
-        }
-    }
 }
+
+// Do scorekeeping for an explosion
+- (void) explosionHasOccurred
+{
+    energy -= EXPLOSION_PENALTY;
+    energy = energy < 0 ? 0 : energy;
+    
+    // Lose combo
+    ching = 0;
+}
+
 
 #pragma mark collision delegate
 
@@ -412,5 +395,7 @@ BOOL isDead;
         ching = 0;
     }
 }
+
+
 
 @end

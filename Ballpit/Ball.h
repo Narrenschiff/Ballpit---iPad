@@ -10,12 +10,13 @@
 
 @interface Ball : SKSpriteNode
 @property BOOL isFullBall;
-@property CFTimeInterval explosionTimer;
 @property CFTimeInterval refractoryTimer;
 @property uint ballColour;
+@property CFTimeInterval explosionCountdown;
 
 -(id) initWithBallColour: (uint) c;
 -(id) initPodWithColour: (uint) c;
 -(void) podToBall;
+-(void) killSelfAfterSecond;
 
 @end

@@ -13,4 +13,6 @@
 @property UILabel *scoreLabel;
 @property UILabel *energyLabel;
 
+- (void) explosionHasOccurred;
+
 @end
