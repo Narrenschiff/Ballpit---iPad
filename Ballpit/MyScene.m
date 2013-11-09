@@ -27,8 +27,10 @@ NSMutableArray *chingsToAdd;
 CFTimeInterval respawnCounter;
 uint score;
 int energy;
+int energyToDeplete;
 uint ching;
 BOOL isDead;
+BOOL isRedrawingLevel;
 
 -(id)initWithSize:(CGSize)size {
     if (self = [super initWithSize:size]) {
@@ -63,10 +65,16 @@ BOOL isDead;
         srand (time(NULL));
         
         // Lay out levels and add ship
+        isDead = NO;
+        isRedrawingLevel = YES;
         [self newGame];
         
         // Allocate array for pods to be added after collisions
         podsToAdd = [[NSMutableArray alloc] init];
+        
+        // Deplete energy every 1/10th of a second if ship takes a hit
+        [self runAction:[SKAction repeatActionForever:[SKAction sequence:@[[SKAction waitForDuration:0.05],
+                                                                           [SKAction performSelector:@selector(depleteEnergyByOne) onTarget:self]]]]];
     }
     return self;
 }
@@ -80,6 +88,9 @@ BOOL isDead;
         ball.position = CGPointMake((float)rand()/(float)(RAND_MAX / self.frame.size.width), (float)rand()/(float)(RAND_MAX / self.frame.size.height));
         
         [balls addChild:ball];
+        
+        // End of level setup
+        isRedrawingLevel = NO;
     }
 }
 
@@ -105,24 +116,34 @@ BOOL isDead;
 {
     [self gameOverLabel];
     isDead = YES;
+    
+    // Explosion effect
     SKEmitterNode *explosion = [NSKeyedUnarchiver unarchiveObjectWithFile:[[NSBundle mainBundle] pathForResource:@"Explode" ofType:@"sks"]];
     explosion.position = ship.position;
     explosion.numParticlesToEmit = 80;
     [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:4], [SKAction removeFromParent]]]];
     [self addChild:explosion];
+    
+    // Remove ship
     [ship removeFromParent];
+    
+    // Kill all remaining balls
     [self killBallPit];
+
 }
 
 -(void) newGame
 {
-    [self layoutBallPit];
+
     [self shipAppears];
     score = 0;
     energy = 100;
+    energyToDeplete = 0;
     isDead = NO;
     ching = 0;
     chingsToAdd = [[NSMutableArray alloc] init];
+    [self layoutBallPit];
+
 }
 
 -(void) gameOverLabel
@@ -273,60 +294,61 @@ BOOL isDead;
     
     self.scoreLabel.text = [NSString stringWithFormat:@"%08d",score];
     self.energyLabel.text = [NSString stringWithFormat:@"%d",energy];
-    
-    // Die if we're out of energy and not already dead
-    if (energy <= 0) {
-        if (!isDead) {
-            [self shipExplodes];
-            respawnCounter = currentTime + 3;
-            return;
-        }
+
+    if (isRedrawingLevel) return;
+    // If we're out of energy and not already dead, kill the ship and kill the ballpit
+    if (energy <= 0 && !isDead) {
+        isDead = YES;
+        [self shipExplodes];
+        [self killBallPit];
+        return;
     }
     
     // If there's just one ball left, blow it up.
     if ([balls.children count] == 1){
         Ball *b = [balls.children objectAtIndex:0];
-        if (b.isFullBall == YES && respawnCounter  == 0){
-            // Start respawn counter ticking
-            respawnCounter = currentTime;
+        if (b.isFullBall == YES){
             // Give last ball one second to blow
             [b killSelfAfterSecond];
             return;
         }
     }
     
-    // If there's no balls left, wait a while and spawn some new ones
+    // If there's no balls left, trigger either next level or new game
     if ([balls.children count] == 0){
-        if (respawnCounter == 0) {
-            respawnCounter = currentTime;
+        isRedrawingLevel = YES;
+        if (isDead) {
+        [self runAction:[SKAction sequence:@[[SKAction waitForDuration:3],
+                                             [SKAction performSelector:@selector(newGame) onTarget:self]]]];
         }else{
-            if (currentTime - respawnCounter > 3) {
-                if (isDead) {
-                    // New game if dead
-                    [self newGame];
-                }else{
-                    // Otherwise new level
-                    [self layoutBallPit];
-                    score += LEVEL_SCORE;
-                    [self levelUpLabel];
-                }
-            }
+            [self runAction:[SKAction sequence:@[[SKAction waitForDuration:3],
+                                                 [SKAction performSelector:@selector(nextLevel) onTarget:self]]]];
         }
-        return;
     }
-    
+}
 
-    
+-(void) nextLevel
+{
+    [self layoutBallPit];
+    score += LEVEL_SCORE;
+    [self levelUpLabel];
 }
 
 // Do scorekeeping for an explosion
 - (void) explosionHasOccurred
 {
-    energy -= EXPLOSION_PENALTY;
-    energy = energy < 0 ? 0 : energy;
-    
+    energyToDeplete += EXPLOSION_PENALTY;
     // Lose combo
     ching = 0;
+}
+
+- (void) depleteEnergyByOne
+{
+    if (energyToDeplete > 0){
+        energyToDeplete -=1;
+        energy -=1;
+        energy = energy < 0 ? 0 : energy;
+    }
 }
 
 
