@@ -8,6 +8,8 @@
 
 #import "MyScene.h"
 #import "Ball.h"
+#import "SoundManager.h"
+
 #define THRUSTSCALE 3.0
 #define POD_SCORE 100
 #define COLLISION_SCORE 500
@@ -46,7 +48,7 @@ BOOL isRedrawingLevel;
         ship.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:45.0];
         ship.physicsBody.affectedByGravity = NO;
         ship.physicsBody.categoryBitMask = 1;
-        ship.physicsBody.contactTestBitMask = 4;
+        ship.physicsBody.contactTestBitMask = 4 | 2;
         
         
         // Add balls to playfield
@@ -143,6 +145,7 @@ BOOL isRedrawingLevel;
     ching = 0;
     chingsToAdd = [[NSMutableArray alloc] init];
     [self layoutBallPit];
+    [[SoundManager theSoundManager] playSoundBackInPlay];
 
 }
 
@@ -374,6 +377,7 @@ BOOL isRedrawingLevel;
             score += COLLISION_SCORE;
             ching++;
             [self chingLabelAtPosition:contact.contactPoint];
+            [[SoundManager theSoundManager] playSoundGlowHit];
         }else{
             // Otherwise spawn a pod, unless either ball is refractory
             // Refractory period stops too many pods being created from casual contacts
@@ -396,6 +400,7 @@ BOOL isRedrawingLevel;
                     default:
                         break;
                 }
+                [[SoundManager theSoundManager] playSoundWallHit];
                 
                 // Pod will appear at contact point
                 pod.position = contact.contactPoint;
@@ -408,6 +413,15 @@ BOOL isRedrawingLevel;
             }
         }
     }else{
+        // Hacky bit to see if this is a ship / ball collision
+        if (bodyAIsBall && ((Ball *)contact.bodyA.node).isFullBall) {
+            [[SoundManager theSoundManager] playSoundWallHit];
+            return;
+        }
+        if (bodyBIsBall && ((Ball *)contact.bodyB.node).isFullBall) {
+            [[SoundManager theSoundManager] playSoundWallHit];
+            return;
+        }
         // If it's not a ball-on-ball, it must be pod-on-ship. Remove pod.
         if (bodyAIsBall) [contact.bodyA.node removeFromParent];
         if (bodyBIsBall) [contact.bodyB.node removeFromParent];
@@ -417,6 +431,8 @@ BOOL isRedrawingLevel;
         
         // Lose combo
         ching = 0;
+        
+        [[SoundManager theSoundManager] playSoundGlowHit];
     }
 }
 

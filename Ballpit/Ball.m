@@ -8,6 +8,7 @@
 
 #import "Ball.h"
 #import "MyScene.h"
+#import "SoundManager.h"
 #define POD_TIME 10
 #define EXPLOSION_TIME 60
 #define REFRACTORY_TIME 0.3
@@ -44,7 +45,7 @@
     self.physicsBody.restitution = 1.0;
     
     self.physicsBody.categoryBitMask = 2;
-    self.physicsBody.contactTestBitMask = 2;
+    self.physicsBody.contactTestBitMask = 2 | 1 ;
 
     [self pulseBall];
     
@@ -164,7 +165,8 @@
     [explosion runAction:[SKAction sequence:@[[SKAction waitForDuration:3], [SKAction removeFromParent]]]];
     [self.scene addChild:explosion];
     [self removeFromParent];
-
+    
+    [[SoundManager theSoundManager] playExplosion];
 }
 
 
