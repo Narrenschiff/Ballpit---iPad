@@ -368,7 +368,10 @@ BOOL isRedrawingLevel;
         Ball *a = (Ball *)contact.bodyA.node;
         Ball *b = (Ball *)contact.bodyB.node;
         
+        [[SoundManager theSoundManager] playSoundGlowHit];
+        
         // Check colours
+        
         if (a.ballColour == b.ballColour){
             // If they're the same colour, remove from field
             SKAction *removeSequence = [SKAction sequence:@[[SKAction scaleTo:0 duration:0.2], [SKAction removeFromParent] ]];
@@ -377,7 +380,6 @@ BOOL isRedrawingLevel;
             score += COLLISION_SCORE;
             ching++;
             [self chingLabelAtPosition:contact.contactPoint];
-            [[SoundManager theSoundManager] playSoundGlowHit];
         }else{
             // Otherwise spawn a pod, unless either ball is refractory
             // Refractory period stops too many pods being created from casual contacts
@@ -428,11 +430,11 @@ BOOL isRedrawingLevel;
         score += POD_SCORE;
         energy += POD_ENERGY;
         energy = energy > 100 ? 100 : energy;
+        [[SoundManager theSoundManager] playPodCollected];
         
         // Lose combo
         ching = 0;
         
-        [[SoundManager theSoundManager] playSoundGlowHit];
     }
 }
 

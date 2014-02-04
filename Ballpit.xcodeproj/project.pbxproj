@@ -31,6 +31,9 @@
 		3C3A9D76182957840068773C /* Ball.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C3A9D75182957840068773C /* Ball.m */; };
 		3C3A9D7D182A684A0068773C /* Explode.sks in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D7B182A684A0068773C /* Explode.sks */; };
 		3C3A9D7E182A684A0068773C /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C3A9D7C182A684A0068773C /* spark.png */; };
+		3C7416AB18A13CCA00442F64 /* resumeplay.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C7416AA18A13CCA00442F64 /* resumeplay.wav */; };
+		3C7416AD18A13D0100442F64 /* Explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C7416AC18A13D0100442F64 /* Explosion.wav */; };
+		3C7416AF18A13D0800442F64 /* podcollected.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C7416AE18A13D0800442F64 /* podcollected.wav */; };
 		3C82679D188FD1340016C59C /* SoundManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C82679C188FD1340016C59C /* SoundManager.m */; };
 		3C8267A6188FD16E0016C59C /* tink.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C82679E188FD16E0016C59C /* tink.wav */; };
 		3C8267A7188FD16E0016C59C /* thunk.aif in Resources */ = {isa = PBXBuildFile; fileRef = 3C82679F188FD16E0016C59C /* thunk.aif */; };
@@ -39,8 +42,6 @@
 		3C8267AA188FD16E0016C59C /* bloop2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C8267A2188FD16E0016C59C /* bloop2.wav */; };
 		3C8267AB188FD16E0016C59C /* thud.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C8267A3188FD16E0016C59C /* thud.wav */; };
 		3C8267AC188FD16E0016C59C /* bloop1.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C8267A4188FD16E0016C59C /* bloop1.wav */; };
-		3C8267AD188FD16E0016C59C /* resumeplay.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C8267A5188FD16E0016C59C /* resumeplay.wav */; };
-		3C8267B0188FDDC90016C59C /* Explosion.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3C8267AF188FDDC90016C59C /* Explosion.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +86,9 @@
 		3C3A9D75182957840068773C /* Ball.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Ball.m; sourceTree = "<group>"; };
 		3C3A9D7B182A684A0068773C /* Explode.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Explode.sks; sourceTree = "<group>"; };
 		3C3A9D7C182A684A0068773C /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
+		3C7416AA18A13CCA00442F64 /* resumeplay.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = resumeplay.wav; sourceTree = "<group>"; };
+		3C7416AC18A13D0100442F64 /* Explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Explosion.wav; sourceTree = "<group>"; };
+		3C7416AE18A13D0800442F64 /* podcollected.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = podcollected.wav; sourceTree = "<group>"; };
 		3C82679B188FD1340016C59C /* SoundManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundManager.h; sourceTree = "<group>"; };
 		3C82679C188FD1340016C59C /* SoundManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SoundManager.m; sourceTree = "<group>"; };
 		3C82679E188FD16E0016C59C /* tink.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tink.wav; sourceTree = "<group>"; };
@@ -94,8 +98,6 @@
 		3C8267A2188FD16E0016C59C /* bloop2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bloop2.wav; sourceTree = "<group>"; };
 		3C8267A3188FD16E0016C59C /* thud.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = thud.wav; sourceTree = "<group>"; };
 		3C8267A4188FD16E0016C59C /* bloop1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bloop1.wav; sourceTree = "<group>"; };
-		3C8267A5188FD16E0016C59C /* resumeplay.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = resumeplay.wav; sourceTree = "<group>"; };
-		3C8267AF188FDDC90016C59C /* Explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Explosion.wav; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,7 +216,7 @@
 		3C8267AE188FD1760016C59C /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
-				3C8267AF188FDDC90016C59C /* Explosion.wav */,
+				3C7416AC18A13D0100442F64 /* Explosion.wav */,
 				3C82679E188FD16E0016C59C /* tink.wav */,
 				3C82679F188FD16E0016C59C /* thunk.aif */,
 				3C8267A0188FD16E0016C59C /* bloop3.wav */,
@@ -222,7 +224,8 @@
 				3C8267A2188FD16E0016C59C /* bloop2.wav */,
 				3C8267A3188FD16E0016C59C /* thud.wav */,
 				3C8267A4188FD16E0016C59C /* bloop1.wav */,
-				3C8267A5188FD16E0016C59C /* resumeplay.wav */,
+				3C7416AA18A13CCA00442F64 /* resumeplay.wav */,
+				3C7416AE18A13D0800442F64 /* podcollected.wav */,
 			);
 			name = Sounds;
 			sourceTree = "<group>";
@@ -306,7 +309,6 @@
 				3C3A9D7E182A684A0068773C /* spark.png in Resources */,
 				3C3A9D50182921680068773C /* Images.xcassets in Resources */,
 				3C3A9D71182929A50068773C /* Green.png in Resources */,
-				3C8267AD188FD16E0016C59C /* resumeplay.wav in Resources */,
 				3C3A9D46182921680068773C /* Main_iPad.storyboard in Resources */,
 				3C8267AA188FD16E0016C59C /* bloop2.wav in Resources */,
 				3C3A9D70182929A50068773C /* Blue.png in Resources */,
@@ -314,12 +316,14 @@
 				3C8267A6188FD16E0016C59C /* tink.wav in Resources */,
 				3C8267AC188FD16E0016C59C /* bloop1.wav in Resources */,
 				3C3A9D7D182A684A0068773C /* Explode.sks in Resources */,
+				3C7416AF18A13D0800442F64 /* podcollected.wav in Resources */,
 				3C8267AB188FD16E0016C59C /* thud.wav in Resources */,
+				3C7416AB18A13CCA00442F64 /* resumeplay.wav in Resources */,
 				3C8267A9188FD16E0016C59C /* laser.wav in Resources */,
 				3C3A9D43182921680068773C /* Main_iPhone.storyboard in Resources */,
 				3C3A9D3A182921680068773C /* InfoPlist.strings in Resources */,
 				3C8267A8188FD16E0016C59C /* bloop3.wav in Resources */,
-				3C8267B0188FDDC90016C59C /* Explosion.wav in Resources */,
+				3C7416AD18A13D0100442F64 /* Explosion.wav in Resources */,
 				3C3A9D72182929A50068773C /* Red.png in Resources */,
 				3C3A9D73182929A50068773C /* Ship.png in Resources */,
 			);

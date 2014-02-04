@@ -20,6 +20,7 @@
     AVAudioPlayer *bloop3;
     AVAudioPlayer *backInPlay;
     AVAudioPlayer *explosion;
+    AVAudioPlayer *podCollectedPlayer;
 }
 
 + (id)theSoundManager
@@ -44,6 +45,7 @@
         NSURL *bloop3URL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"bloop3" ofType:@"wav"]];
         NSURL *backInPlayURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"resumeplay" ofType:@"wav"]];
         NSURL *explosionURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"Explosion" ofType:@"wav"]];
+        NSURL *podCollectedURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"podcollected" ofType:@"wav"]];
         
         NSError *error;
         thunkPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:pingURL error:&error];
@@ -57,6 +59,7 @@
         backInPlay = [[AVAudioPlayer alloc] initWithContentsOfURL:backInPlayURL error:&error];
         
         explosion = [[AVAudioPlayer alloc] initWithContentsOfURL:explosionURL error:&error];
+        podCollectedPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:podCollectedURL error:&error];
     }
     return self;
 }
@@ -102,6 +105,11 @@
 -(void) playPaddleThud
 {
     [thudPlayer play];
+}
+
+-(void) playPodCollected
+{
+    [podCollectedPlayer play];
 }
 
 @end

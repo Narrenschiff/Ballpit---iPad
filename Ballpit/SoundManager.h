@@ -18,5 +18,6 @@
 -(void) playSoundBackInPlay;
 -(void) playPaddleThud;
 -(void) playExplosion;
+-(void) playPodCollected;
 
 @end
