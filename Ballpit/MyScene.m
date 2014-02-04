@@ -10,14 +10,6 @@
 #import "Ball.h"
 #import "SoundManager.h"
 
-#define THRUSTSCALE 3.0
-#define POD_SCORE 100
-#define COLLISION_SCORE 500
-#define LEVEL_SCORE 1000
-#define EXPLOSION_PENALTY 34
-#define POD_ENERGY 15
-
-
 @implementation MyScene
 
 SKSpriteNode *ship;
@@ -47,8 +39,8 @@ BOOL isRedrawingLevel;
         ship = [SKSpriteNode spriteNodeWithImageNamed:@"Ship"];
         ship.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:45.0];
         ship.physicsBody.affectedByGravity = NO;
-        ship.physicsBody.categoryBitMask = 1;
-        ship.physicsBody.contactTestBitMask = 4 | 2;
+        ship.physicsBody.categoryBitMask = shipCategoryBitmask;
+        ship.physicsBody.contactTestBitMask = podCategoryBitmask | ballCategoryBitmask;
         
         
         // Add balls to playfield
@@ -58,7 +50,7 @@ BOOL isRedrawingLevel;
         SKNode *edge = [[SKNode alloc] init];
         edge.physicsBody = [SKPhysicsBody bodyWithEdgeLoopFromRect:self.frame];
         [self addChild:edge];
-        edge.physicsBody.categoryBitMask = 8;
+        edge.physicsBody.categoryBitMask = boundaryCategoryBitmask;
         
         // Set up contact delegate for processing collisions
         self.scene.physicsWorld.contactDelegate = self;

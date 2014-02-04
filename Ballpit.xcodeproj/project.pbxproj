@@ -89,6 +89,7 @@
 		3C7416AA18A13CCA00442F64 /* resumeplay.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = resumeplay.wav; sourceTree = "<group>"; };
 		3C7416AC18A13D0100442F64 /* Explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Explosion.wav; sourceTree = "<group>"; };
 		3C7416AE18A13D0800442F64 /* podcollected.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = podcollected.wav; sourceTree = "<group>"; };
+		3C7416B018A1403500442F64 /* AppConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppConstants.h; sourceTree = "<group>"; };
 		3C82679B188FD1340016C59C /* SoundManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundManager.h; sourceTree = "<group>"; };
 		3C82679C188FD1340016C59C /* SoundManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SoundManager.m; sourceTree = "<group>"; };
 		3C82679E188FD16E0016C59C /* tink.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = tink.wav; sourceTree = "<group>"; };
@@ -159,6 +160,7 @@
 		3C3A9D35182921680068773C /* Ballpit */ = {
 			isa = PBXGroup;
 			children = (
+				3C7416B018A1403500442F64 /* AppConstants.h */,
 				3C3A9D3E182921680068773C /* AppDelegate.h */,
 				3C3A9D3F182921680068773C /* AppDelegate.m */,
 				3C3A9D41182921680068773C /* Main_iPhone.storyboard */,

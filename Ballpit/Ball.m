@@ -9,9 +9,6 @@
 #import "Ball.h"
 #import "MyScene.h"
 #import "SoundManager.h"
-#define POD_TIME 10
-#define EXPLOSION_TIME 60
-#define REFRACTORY_TIME 0.3
 
 
 @implementation Ball
@@ -44,8 +41,8 @@
     self.physicsBody.affectedByGravity = NO;
     self.physicsBody.restitution = 1.0;
     
-    self.physicsBody.categoryBitMask = 2;
-    self.physicsBody.contactTestBitMask = 2 | 1 ;
+    self.physicsBody.categoryBitMask = ballCategoryBitmask;
+    self.physicsBody.contactTestBitMask = ballCategoryBitmask | boundaryCategoryBitmask;
 
     [self pulseBall];
     
@@ -82,7 +79,7 @@
     self.physicsBody.affectedByGravity = NO;
     self.physicsBody.restitution = 1.0;
     
-    self.physicsBody.categoryBitMask = 4;
+    self.physicsBody.categoryBitMask = podCategoryBitmask;
     self.physicsBody.contactTestBitMask = 0;
     
     // Turn into a ball after a while
